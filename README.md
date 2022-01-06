@@ -1,6 +1,7 @@
 # i18n-keeper
 
 - 开启服务通过接口收集多语言缺失键
+- 递归扫描目录，正则匹配$t()函数调用，收集多语言键
 - 翻译多语言文件
 
 
@@ -11,7 +12,7 @@
 npm i i18n-keeper -g
 ```
 
-- ### 安装成功后会增加两个命令 
+- ### 安装成功后会增加三个命令 
 
 - ##### i18n-server 运行服务，允许跨域，默认监听8678端口，可通过-p port修改监听端口 -h 打印参数用法
 
@@ -30,6 +31,14 @@ axios.get('http://localhost:8678?keyPath=index.首页')
     console.log(error);
   });
 ```
+
+- ##### i18n-scan 递归扫描目录，正则匹配$t()函数调用，收集多语言键，生成json文件
+
+示例
+```shell script
+i18n-scan -d ./src -f ./locales/zh-cn.json
+```
+
 
 - ##### i18n-translate 翻译json文件
 

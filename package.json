@@ -1,9 +1,10 @@
 {
   "name": "i18n-keeper",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "",
   "main": "index.js",
   "bin": {
+    "i18n-scan": "scan.js",
     "i18n-server": "index.js",
     "i18n-translate": "translate.js"
   },
