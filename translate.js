@@ -3,7 +3,7 @@ const fs = require('fs')
 const { baidu } = require('translation.js')
 const { program } = require('commander')
 
-program.version('i18n-translate 1.0.7 Crafted by 鬼斧')
+program.version('i18n-translate 1.0.9 Crafted by 鬼斧')
 program
   .option('-file, --language-file <type>', '原语言json文件路径')
   .option('-from, --from-language <type>', '原语言')
@@ -82,11 +82,17 @@ async function doTrans () {
   for (let lan of lanList) {
     transedData = []
     for (let data of box) {
-      let res = await baidu.translate({
-        text: data,
-        from: srcLan,
-        to: lan
-      })
+      let res
+      try {
+        res = await baidu.translate({
+          text: data,
+          from: srcLan,
+          to: lan
+        })
+      } catch(error) {
+        console.log("\033[0;31m 翻译出错，请检查json文件是否包含特殊字符\033[0m")
+        process.exit(1)
+      }
       for (let item of res.result) {
         transedData.push(item)
       }

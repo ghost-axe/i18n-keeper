@@ -3,9 +3,9 @@ const fs = require('fs')
 const path = require('path')
 const { program } = require('commander')
 
-program.version('i18n-scan 1.0.7 Crafted by 鬼斧')
+program.version('i18n-scan 1.0.9 Crafted by 鬼斧')
 program
-  .option('-d, --dir <type>', '扫描路径')
+  .option('-d, --dir <type>', '扫描路径 多个路径用英文逗号分隔')
   .option('-f, --file <type>', 'json文件保存路径')
 program.parse(process.argv)
 
@@ -19,6 +19,8 @@ if (!options.file) {
   process.exit()
 }
 
+let scanDirs = options.dir.split(',')
+let ignoreDirs = ['node_modules', '.git']
 let keyPaths = []
 let lanJson = {}
 let startTs = new Date().getTime()
@@ -34,9 +36,14 @@ function processDir(dir) {
     let filePath = path.join(dir, file)
     let stat = fs.statSync(dir + '/' + file)
     if (stat.isFile()) {
-      processFile(filePath)
+      let extName = path.extname(filePath)
+      if (extName == '.vue') {
+        processFile(filePath)
+      }
     } else if (stat.isDirectory()) {
-      processDir(filePath)
+      if (ignoreDirs.indexOf(file) == -1) {
+        processDir(filePath)
+      }
     }
   })
 }
@@ -44,15 +51,21 @@ function processDir(dir) {
 function processFile(filePath) {
   console.log("\033[0;32m " + filePath + "\033[0m")
   let fileContent = fs.readFileSync(filePath, {encoding: 'utf-8'})
-  let reg = /\$t\('(.*?)'\)/g
+  let reg1 = /\$t\('(.*?)'\)/g
+  let reg2 = /\$t\("(.*?)"\)/g
   let matchResult
-  while (matchResult = reg.exec(fileContent)) {
+  while (matchResult = reg1.exec(fileContent)) {
+    keyPaths.push(matchResult[1])
+  }
+  while (matchResult = reg2.exec(fileContent)) {
     keyPaths.push(matchResult[1])
   }
 }
 
 console.log('扫描文件中...');
-processDir(options.dir)
+scanDirs.forEach(dir => {
+  processDir(dir)
+})
 keyPaths.forEach(keyPath => {
   let keys = keyPath.split('.')
   let obj = lanJson

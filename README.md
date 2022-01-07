@@ -34,7 +34,7 @@ axios.get('http://localhost:8678?keyPath=index.首页')
 
 - ##### i18n-scan 递归扫描目录，正则匹配$t()函数调用，收集多语言键，生成json文件
 
-示例
+示例 多个目录用英文逗号分隔
 ```shell script
 i18n-scan -d ./src -f ./locales/zh-cn.json
 ```
