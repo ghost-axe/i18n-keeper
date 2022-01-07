@@ -3,7 +3,7 @@ const fs = require('fs')
 const { baidu } = require('translation.js')
 const { program } = require('commander')
 
-program.version('i18n-translate 1.0.9 Crafted by 鬼斧')
+program.version('i18n-translate 1.0.10 Crafted by 鬼斧')
 program
   .option('-file, --language-file <type>', '原语言json文件路径')
   .option('-from, --from-language <type>', '原语言')
@@ -24,7 +24,6 @@ if (!options.toLanguage) {
   process.exit()
 }
 
-var workDir = ''
 var lanFile = options.languageFile
 var srcLan = options.fromLanguage
 var lanList = options.toLanguage.split(',')
@@ -50,15 +49,19 @@ function translate () {
 }
 
 function start () {
-  for (let k in SrcData) {
-    travelObj(SrcData, k)
+  let keys = Object.keys(SrcData)
+  keys.sort()
+  for (let i = 0; i < keys.length; i++) {
+    travelObj(SrcData, keys[i])
   }
 }
 
 function travelObj (data, key) {
   if (data[key] instanceof Object) {
-    for (let k in data[key]) {
-      travelObj(data[key], k)
+    let keys = Object.keys(data[key])
+    keys.sort()
+    for (let i = 0; i < keys.length; i++) {
+      travelObj(data[key], keys[i])
     }
   } else {
     transData.push(data[key])
@@ -69,13 +72,14 @@ function travelObj (data, key) {
 }
 
 function stringCut (data) {
-  if (data.length > 1800) {
-    let index = data.indexOf('\n', 1700)
-    box.push(data.substring(0, index))
-    stringCut(data.substring(index))
-  } else {
-    box.push(data)
+  let startIndex = 0
+  let endIndex = data.length
+  while(endIndex - startIndex > 1800) {
+    let index = data.indexOf('\n', startIndex + 1700)
+    box.push(data.substring(startIndex, index))
+    startIndex = index + 1
   }
+  box.push(data.substring(startIndex, endIndex))
 }
 
 async function doTrans () {
