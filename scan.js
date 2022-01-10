@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const { program } = require('commander')
 
-program.version('i18n-scan 1.0.10 Crafted by 鬼斧')
+program.version('i18n-scan 1.0.12 Crafted by 鬼斧')
 program
   .option('-d, --dir <type>', '扫描路径 多个路径用英文逗号分隔')
   .option('-f, --file <type>', 'json文件保存路径')
@@ -21,6 +21,7 @@ if (!options.file) {
 
 let scanDirs = options.dir.split(',')
 let ignoreDirs = ['node_modules', '.git']
+let fileExtList = ['.vue', '.js']
 let keyPaths = []
 let lanJson = {}
 let startTs = new Date().getTime()
@@ -37,7 +38,7 @@ function processDir(dir) {
     let stat = fs.statSync(dir + '/' + file)
     if (stat.isFile()) {
       let extName = path.extname(filePath)
-      if (extName == '.vue') {
+      if (fileExtList.indexOf(extName) > -1) {
         processFile(filePath)
       }
     } else if (stat.isDirectory()) {
@@ -53,11 +54,19 @@ function processFile(filePath) {
   let fileContent = fs.readFileSync(filePath, {encoding: 'utf-8'})
   let reg1 = /\$t\('(.*?)'\)/g
   let reg2 = /\$t\("(.*?)"\)/g
+  let reg3 = /i18n.t\('(.*?)'\)/g
+  let reg4 = /i18n.t\("(.*?)"\)/g
   let matchResult
   while (matchResult = reg1.exec(fileContent)) {
     keyPaths.push(matchResult[1])
   }
   while (matchResult = reg2.exec(fileContent)) {
+    keyPaths.push(matchResult[1])
+  }
+  while (matchResult = reg3.exec(fileContent)) {
+    keyPaths.push(matchResult[1])
+  }
+  while (matchResult = reg4.exec(fileContent)) {
     keyPaths.push(matchResult[1])
   }
 }
