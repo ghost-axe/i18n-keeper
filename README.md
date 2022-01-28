@@ -41,8 +41,8 @@ i18n-scan -d ./src -f ./locales/zh-cn.json
 
 
 - ##### i18n-translate 翻译json文件
-
-示例
+- 
+示例 可以通过-api参数指定使用的翻译Api，支持百度（baidu），有道（youdao），谷歌（google），默认百度翻译
 ```shell script
 i18n-translate -file ./zh-cn.json -from zh-CN -to en,ko,zh-TW
 ```

@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const { program } = require('commander')
 
-program.version('i18n-scan 1.0.13 Crafted by 鬼斧')
+program.version('i18n-scan 1.0.15 Crafted by 鬼斧')
 program
   .option('-d, --dir <type>', '扫描路径 多个路径用英文逗号分隔')
   .option('-f, --file <type>', 'json文件保存路径')

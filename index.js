@@ -5,7 +5,7 @@ const { program } = require('commander')
 const app = express()
 var port = 8678
 
-program.version('i18n-server 1.0.13 Crafted by 鬼斧')
+program.version('i18n-server 1.0.15 Crafted by 鬼斧')
 program
   .option('-f, --file <type>', '多语言json文件路径')
   .option('-p, --port <type>', '监听端口')

@@ -1,13 +1,14 @@
 #! /usr/bin/env node
 const fs = require('fs')
-const { baidu } = require('translation.js')
+const { baidu, youdao, google } = require('translation.js')
 const { program } = require('commander')
 
-program.version('i18n-translate 1.0.13 Crafted by 鬼斧')
+program.version('i18n-translate 1.0.15 Crafted by 鬼斧')
 program
   .option('-file, --language-file <type>', '原语言json文件路径')
   .option('-from, --from-language <type>', '原语言')
   .option('-to, --to-language <type>', '翻译的语言，多个语言用英文逗号分隔')
+  .option('-api, --translate-api <type>', '翻译的Api，支持百度（baidu），有道（youdao），谷歌（google），默认百度翻译')
 program.parse(process.argv)
 
 const options = program.opts()
@@ -24,6 +25,7 @@ if (!options.toLanguage) {
   process.exit()
 }
 
+var transApi = baidu
 var lanFile = options.languageFile
 var srcLan = options.fromLanguage
 var lanList = options.toLanguage.split(',')
@@ -34,6 +36,20 @@ var SrcData = {}
 var stringData = ''
 var box = []
 var startTs = new Date().getTime()
+
+if (options.translateApi) {
+  if (options.translateApi === 'baidu') {
+    console.log("\033[0;32m 已切换百度翻译\033[0m")
+  } else if (options.translateApi === 'youdao') {
+    transApi = youdao
+    console.log("\033[0;32m 已切换有道翻译\033[0m")
+  } else if (options.translateApi === 'google') {
+    transApi = google
+    console.log("\033[0;32m 已切换谷歌翻译\033[0m")
+  } else {
+    console.log("\033[43;30m WARN \033[0;33m 翻译的Api参数错误，将使用默认百度翻译 运行i18n-translate -h 查看用法\033[0m")
+  }
+}
 
 function translate () {
   SrcData = JSON.parse(fs.readFileSync(lanFile))
@@ -64,9 +80,14 @@ function travelObj (data, key) {
       travelObj(data[key], keys[i])
     }
   } else {
-    transData.push(data[key])
     if (translating) {
       data[key] = transedData.shift()
+    } else {
+      if (srcLan === 'en') {
+        transData.push(String(data[key]).toLowerCase())
+      } else {
+        transData.push(data[key])
+      }
     }
   }
 }
@@ -74,8 +95,8 @@ function travelObj (data, key) {
 function stringCut (data) {
   let startIndex = 0
   let endIndex = data.length
-  while(endIndex - startIndex > 1800) {
-    let index = data.indexOf('\n', startIndex + 1700)
+  while(endIndex - startIndex > 1000) {
+    let index = data.indexOf('\n', startIndex + 900)
     box.push(data.substring(startIndex, index))
     startIndex = index + 1
   }
@@ -88,19 +109,21 @@ async function doTrans () {
     for (let data of box) {
       let res
       try {
-        res = await baidu.translate({
+        res = await transApi.translate({
           text: data,
           from: srcLan,
           to: lan
         })
       } catch(error) {
-        console.log("\033[0;31m" + data + "\033[0m")
-        console.log("\033[0;31m 翻译出错，请检查json文件是否包含特殊字符\033[0m")
+        console.log(error)
+        // console.log("\033[0;31m" + data + "\033[0m")
+        // console.log("\033[0;31m 翻译出错，请检查json文件是否包含特殊字符\033[0m")
         process.exit(1)
       }
       for (let item of res.result) {
         transedData.push(item)
       }
+      await waitSeconds(0.1)
     }
     start()
     let disData = JSON.stringify(SrcData, null, '\t')
@@ -110,6 +133,12 @@ async function doTrans () {
   let endTs = new Date().getTime()
   let through = endTs - startTs
   console.log("\n\033[42;30m DONE \033[0;32m " + "翻译完成，用时" + through + "ms\033[0m")
+}
+
+function waitSeconds(second) {
+  return new Promise(resolve => {
+    setTimeout(resolve, second * 1000)
+  })
 }
 
 translate()
